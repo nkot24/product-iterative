@@ -3,53 +3,66 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
-    // Rādīt visu produktu sarakstu
+    // Show all products
     public function index()
     {
-        $products = Product::all();
+        $products = Product::with('tags')->get(); // eager load tags
         return view('products.index', compact('products'));
     }
 
-    // Forma jauna produkta izveidei
+    // Form to create a new product
     public function create()
     {
-        return view('products.create');
+        $tags = Tag::all();
+        return view('products.create', compact('tags'));
     }
 
-    // Saglabāt jaunu produktu
-    public function store(Request $request)
+    // Store a new product
+   public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
             'quantity' => 'required|integer|min:0',
             'expiration_date' => 'required|date',
             'status' => 'required|in:available,unavailable',
+            'tags' => 'array',
         ]);
 
-        Product::create($request->all());
+        $product = Product::create($data);
 
-        return redirect()->route('products.index')->with('success', 'Produkts veiksmīgi izveidots!');
+        // attach selected or newly created tags
+        if (!empty($request->tags)) {
+            $product->tags()->sync($request->tags);
+        }
+
+        return redirect()->route('products.index')
+            ->with('success', 'Produkts veiksmīgi izveidots!');
     }
 
-    // Rādīt konkrētu produktu
+
+    // Show single product
     public function show(Product $product)
     {
+        $product->load('tags'); // eager load tags
         return view('products.show', compact('product'));
     }
 
-    // Forma produkta rediģēšanai
+    // Form to edit product
     public function edit(Product $product)
     {
-        return view('products.edit', compact('product'));
+        $tags = Tag::all();
+        $product->load('tags');
+        return view('products.edit', compact('product', 'tags'));
     }
 
-    // Atjaunināt produktu
+    // Update product
     public function update(Request $request, Product $product)
     {
         $request->validate([
@@ -59,21 +72,26 @@ class ProductController extends Controller
             'quantity' => 'required|integer|min:0',
             'expiration_date' => 'required|date',
             'status' => 'required|in:available,unavailable',
+            'tags' => 'nullable|array',
+            'tags.*' => 'exists:tags,id',
         ]);
 
         $product->update($request->all());
 
+        // Sync tags
+        $product->tags()->sync($request->tags ?? []);
+
         return redirect()->route('products.index')->with('success', 'Produkts veiksmīgi atjaunināts!');
     }
 
-    // Dzēst produktu
+    // Delete product
     public function destroy(Product $product)
     {
         $product->delete();
-
         return redirect()->route('products.index')->with('success', 'Produkts veiksmīgi dzēsts!');
     }
 
+    // Increase quantity via AJAX
     public function increase(Product $product)
     {
         $product->increaseQuantity();
@@ -84,6 +102,7 @@ class ProductController extends Controller
         ]);
     }
 
+    // Decrease quantity via AJAX
     public function decrease(Product $product)
     {
         $product->decreaseQuantity();
@@ -91,6 +110,27 @@ class ProductController extends Controller
         return response()->json([
             'quantity' => $product->quantity,
             'message' => 'Produkts samazināts par 1 vienību.'
+        ]);
+    }
+
+    // Add tag via AJAX
+   public function addTag(Request $request, Product $product = null)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        // Create or find tag
+        $tag = Tag::firstOrCreate(['name' => $request->name]);
+
+        // If product exists (show/edit page), attach it
+        if ($product) {
+            $product->tags()->syncWithoutDetaching([$tag->id]);
+        }
+
+        return response()->json([
+            'tag' => $tag,
+            'message' => 'Birka saglabāta!'
         ]);
     }
 

@@ -2,7 +2,6 @@
     <h1>Produkti</h1>
 
     <x-success-alert />
-
     <x-errors-alert />
 
     <a href="{{ route('products.create') }}">+ Jauns produkts</a>
@@ -15,6 +14,7 @@
             <th>Daudzums</th>
             <th>Derīguma termiņš</th>
             <th>Statuss</th>
+            <th>Birkas</th>
             <th>Darbības</th>
         </tr>
         @foreach($products as $product)
@@ -25,6 +25,11 @@
             <td>{{ $product->quantity }}</td>
             <td>{{ $product->expiration_date }}</td>
             <td>{{ ucfirst($product->status) }}</td>
+            <td>
+                @foreach($product->tags as $tag)
+                    <span class="tag">{{ $tag->name }}</span>
+                @endforeach
+            </td>
             <td>
                 <a href="{{ route('products.show', $product) }}">Skatīt</a> |
                 <a href="{{ route('products.edit', $product) }}">Rediģēt</a> |

@@ -2,7 +2,6 @@
     <h1>Rediģēt produktu</h1>
 
     <x-success-alert />
-
     <x-errors-alert />
 
     <form method="POST" action="{{ route('products.update', $product) }}">
@@ -48,6 +47,37 @@
             </select>
         </p>
 
+        <!-- Tags -->
+        <p>
+            <label>Izvēlies birkas:</label><br>
+            <select name="tags[]" multiple>
+                @foreach($tags as $tag)
+                    <option value="{{ $tag->id }}"
+                        {{ $product->tags->contains($tag->id) ? 'selected' : '' }}>
+                        {{ $tag->name }}
+                    </option>
+                @endforeach
+            </select>
+        </p>
+
+        <!-- Add new tag AJAX -->
+        <p>
+            <label>Pievienot jaunu birku:</label><br>
+            <input type="text" id="new-tag-name" placeholder="Jauna birka">
+            <button type="button" id="add-tag-btn" data-url="{{ route('products.addTag', $product) }}">Pievienot</button>
+        </p>
+
+        <ul id="product-tags">
+            @foreach($product->tags as $tag)
+                <li>{{ $tag->name }}</li>
+            @endforeach
+        </ul>
+
         <button type="submit">Atjaunināt</button>
     </form>
+
+    <!-- CSRF meta -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    @vite(['resources/js/product-tags.js'])
 </x-layout>
