@@ -11,7 +11,7 @@ class ProductControllerTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function index_displays_all_products()
+    public function test_index_displays_all_products()
     {
         $products = Product::factory()->count(5)->create();
 
@@ -24,7 +24,7 @@ class ProductControllerTest extends TestCase
     }
 
     /** @test */
-    public function create_displays_form()
+    public function test_create_displays_form()
     {
         $response = $this->get(route('products.create'));
 
@@ -33,7 +33,7 @@ class ProductControllerTest extends TestCase
     }
 
     /** @test */
-    public function store_creates_a_product()
+    public function test_store_creates_a_product()
     {
         $data = [
             'name' => 'Test Produkts',
@@ -52,7 +52,7 @@ class ProductControllerTest extends TestCase
     }
 
     /** @test */
-    public function show_displays_product_details()
+    public function test_show_displays_product_details()
     {
         $product = Product::factory()->create();
 
@@ -63,7 +63,7 @@ class ProductControllerTest extends TestCase
     }
 
     /** @test */
-    public function edit_displays_product_edit_form()
+    public function test_edit_displays_product_edit_form()
     {
         $product = Product::factory()->create();
 
@@ -75,7 +75,7 @@ class ProductControllerTest extends TestCase
     }
 
     /** @test */
-    public function update_modifies_existing_product()
+    public function test_update_modifies_existing_product()
     {
         $product = Product::factory()->create();
 
@@ -96,7 +96,7 @@ class ProductControllerTest extends TestCase
     }
 
     /** @test */
-    public function destroy_deletes_product()
+    public function test_destroy_deletes_product()
     {
         $product = Product::factory()->create();
 
